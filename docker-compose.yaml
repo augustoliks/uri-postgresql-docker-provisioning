@@ -1,0 +1,40 @@
+version: "3.7"
+
+services:
+  db:
+    image: postgres
+    container_name: uri-db
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "15432:5432"
+    volumes:
+      - type: bind
+        source: ./sql/
+        target: /sql/
+      - type: bind
+        source: ./db-config/postgres/docker-entrypoint-initdb.d/
+        target: /docker-entrypoint-initdb.d/
+      - type: volume
+        source: db-storage
+        target: /var/lib/postgresql/data 
+  ui:
+    image: dpage/pgadmin4
+    container_name: uri-ui
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "root@root.com"
+      PGADMIN_DEFAULT_PASSWORD: "root"
+    volumes:
+      - type: bind
+        source: ./db-config/pgadmin/servers.json
+        target: /pgadmin4/servers.json
+      - type: bind
+        source: ./db-config/pgadmin/passfile
+        target: /provisioning/passfile
+    ports:
+      - "16543:80"
+    depends_on:
+      - db
+
+volumes:
+  db-storage:
